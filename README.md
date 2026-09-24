@@ -6,19 +6,19 @@ The layout follows [pilotfish](https://github.com/Nanako0129/pilotfish): one fil
 
 ## Install
 
-From this checkout, add the repo as a local marketplace once, then install per scope:
+Add the repo as a marketplace once, then install per scope:
 
 ```bash
-claude plugin marketplace add /Users/rj/projects/frugal
+claude plugin marketplace add https://github.com/rlucas92/frugal
 claude plugin install frugal@frugal --scope user      # every project
 claude plugin install frugal@frugal --scope project   # this project only, shared via .claude/settings.json
 claude plugin install frugal@frugal --scope local     # this project only, gitignored
 ```
 
-Once the repo is pushed, others use the git URL instead of the path. To try it for one session without installing:
+Working from a local clone instead, pass its path to `marketplace add`. To try it for one session without installing:
 
 ```bash
-claude --plugin-dir /Users/rj/projects/frugal/plugin
+claude --plugin-dir /path/to/frugal/plugin
 ```
 
 Disable, re-enable, or remove:
@@ -36,8 +36,6 @@ claude plugin marketplace add https://github.com/DietrichGebert/ponytail
 ```
 
 Restart Claude Code after installing or updating so the agents and the session hook reload. Do not set `CLAUDE_CODE_SUBAGENT_MODEL`; it overrides every role's model.
-
-If you also have a personal `~/.claude/skills/architect` skill, it overlaps this plugin's `orchestrate` skill. Keep one.
 
 ## What is in the plugin
 
