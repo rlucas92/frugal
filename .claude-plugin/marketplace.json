@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "frugal",
+  "owner": {
+    "name": "rj"
+  },
+  "description": "Local marketplace for frugal multi-agent orchestration plugin.",
+  "allowCrossMarketplaceDependenciesOn": ["ponytail"],
+  "plugins": [
+    {
+      "name": "frugal",
+      "source": "./plugin",
+      "version": "0.3.0",
+      "description": "Triage-first multi-agent orchestration: decides when a multi-agent run is worth it, routes work to the right model, and keeps the frontier model on judgment.",
+      "category": "productivity",
+      "tags": ["orchestration", "subagents", "delegation", "model-routing"]
+    }
+  ]
+}

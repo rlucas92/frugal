@@ -1,0 +1,16 @@
+{
+  "description": "Injects frugal triage policy at session start so every task is sorted into direct, multi-agent, or ask before work begins.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/cat \"${CLAUDE_PLUGIN_ROOT}/policy/session-start.md\""
+          }
+        ]
+      }
+    ]
+  }
+}
