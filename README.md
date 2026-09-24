@@ -76,14 +76,15 @@ Every handoff duplicates context and summarizes on the way back, which is where 
 
 ## Opus 5.5 vs Fable 5.1: rule of thumb
 
-Direct tasks run on the session model, whichever it is. Choose Fable 5.1 as the session model for complex, long-horizon planning; Opus 5.5 at medium effort is the everyday default. Within multi-agent runs, default to **Fable 5.1 at medium effort** for orchestration and advising. Switch to **Opus 5.5 at medium effort** only when the task is security-sensitive (Fable's classifiers can refuse benign defensive work), when Fable has already refused, or for long research loops over external sources. Opus 5 is never used anywhere in the plugin; Opus 5.5 at medium effort replaces it.
+Direct tasks run on the session model, whichever it is. Choose Fable 5.1 as the session model for complex, long-horizon planning; Opus 5.5 at medium effort is the everyday default. Within multi-agent runs, default to **Fable 5.1 at medium effort** for orchestration and advising. Switch to **Opus 5.5 at medium effort** when Fable has refused a benign request, or for long research loops over external sources. Opus 5.5 runs cyber and bio safety classifiers similar to Fable's, so it is a retry path for a false positive, not a way around the classifiers. Opus 5 is never used anywhere in the plugin; Opus 5.5 at medium effort replaces it.
 
 Why:
 
 | Finding | Source |
 |---|---|
 | Fable 5.1 cached input is $0.25/M vs $0.20/M for Opus 5.5, and cached input is the largest term in an agent loop; the two are close, so the choice is about behaviour, not cost | pricing page |
-| Frontier safety classifiers can refuse defensive security work mid-task; pilotfish routes security to Opus for this reason | pilotfish design notes |
+| Frontier safety classifiers can refuse defensive security work mid-task; pilotfish routes security to Opus for this reason. Since Opus 5.5 ships the same classifier families (cyber, bio), the Opus switch is a retry after a false positive, not a guaranteed pass | pilotfish design notes; Opus 5.5 launch notes |
+| Opus 5.5 defaults to medium effort, and at medium it beat Opus 5 at high on agentic coding with about half the tokens; cache reads are $0.20/M against Opus 5's $0.50/M | Opus 5.5 launch notes |
 
 The plugin does not ask you to choose unless an Opus trigger applies.
 

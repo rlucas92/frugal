@@ -31,7 +31,7 @@ The orchestrator and the advisor are the frontier model. The orchestrator is the
 Rule of thumb, from Anthropic's published cost and intelligence measurements:
 
 - **Fable 5.1 at medium effort** is the orchestrator only for complex, long-horizon planning; that is what the multi-agent bucket is, so it is the default here and nowhere else. It delegates and coordinates subagents more reliably, and is cheap on cached input (which dominates an agent loop). Raise effort only where it misses.
-- **Switch to Opus 5.5 at medium effort when** the task is security-sensitive or offensive-security-adjacent (Fable's safety classifiers can refuse benign defensive work mid-task), when Fable has already refused, or when the run is a long research loop over external sources. Cap its spawn count and ask for terse reports.
+- **Switch to Opus 5.5 at medium effort when** Fable has refused a benign request (Opus 5.5 runs similar cyber and bio classifiers, so this is a retry, not a bypass), or when the run is a long research loop over external sources. Cap its spawn count and ask for terse reports.
 - If none of the Opus triggers apply, do not ask; use the session model.
 
 Opus 5 is never used, in any role. Opus 5.5 always runs at medium effort.
