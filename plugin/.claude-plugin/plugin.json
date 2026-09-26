@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "frugal",
   "displayName": "Frugal",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Triage-first multi-agent orchestration for Claude Code: decides when a multi-agent run is worth it, chooses orchestrator vs advisor shape, and routes coding, recon, test runs, review, and verification to the right model.",
   "author": {
     "name": "rj"

@@ -10,7 +10,7 @@
     {
       "name": "frugal",
       "source": "./plugin",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "description": "Triage-first multi-agent orchestration: decides when a multi-agent run is worth it, routes work to the right model, and keeps the frontier model on judgment.",
       "category": "productivity",
       "tags": ["orchestration", "subagents", "delegation", "model-routing"]
