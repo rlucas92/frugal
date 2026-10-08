@@ -1,7 +1,7 @@
 ---
 name: prototyper
 description: Fast implementation when the plan is already clear - executing a written spec, prototyping, exploratory coding, simple scripts, pattern-based multi-file edits, writing tests that follow existing conventions, doc updates. Use when the task needs speed and iteration more than deep reasoning. Give it a complete spec (goal, exact scope, done criteria).
-model: claude-sonnet-5
+model: claude-sonnet-5-5
 effort: medium
 disallowedTools: Agent, Workflow
 skills:

@@ -53,7 +53,7 @@ Run these in order, dropping any that do not apply. State which phases you are r
 | Work | Role | Model | Effort |
 |---|---|---|---|
 | Needs accuracy and reasoning: features, root-caused fixes, refactors with design decisions | `frugal:coder` | Opus 5.5 | medium |
-| Plan is already clear: spec execution, prototyping, scripts, pattern edits, tests following conventions, docs | `frugal:prototyper` | Sonnet 5 | medium |
+| Plan is already clear: spec execution, prototyping, scripts, pattern edits, tests following conventions, docs | `frugal:prototyper` | Sonnet 5.5 | medium |
 | Tiny change, files already in context, brief would cost more than the edit | you, directly | session model | as is |
 
 Parallel writers get `isolation: "worktree"` and disjoint file ownership; integrate every worktree. A brief contains goal, constraints, done criteria, relevant paths, the rationale, and the facts you already established: file:line references, the function that does X, behaviour you confirmed. The coder should start from your findings, not rediscover them. Add the specific rules the piece needs (reuse before adding, shortest readable change, surgical edits). The comment rules are preloaded into both coding roles; do not paste them. Tell the coder which tests cover its piece; it runs those, not the whole suite.

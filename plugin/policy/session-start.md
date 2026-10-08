@@ -21,7 +21,7 @@ Multi-agent runs cost 3 to 10 times the tokens of one agent, spent on duplicated
 ## Routing rules (every bucket)
 
 - Direct tasks run on the session model, whichever it is. Fable 5.1 is chosen as a session model for complex, long-horizon planning (multi-agent orchestration, the advisor role); Opus 5.5 at medium effort is the everyday default. That choice is the user's, made with `/model`, not the policy's.
-- Code is written by `frugal:coder` (Opus 5.5) or `frugal:prototyper` (Sonnet 5). Opus 5 is never used; Opus 5.5 always runs at medium effort. The main session edits directly only when a brief would cost more than the edit: roughly 20 lines across at most 2 files already in context.
+- Code is written by `frugal:coder` (Opus 5.5) or `frugal:prototyper` (Sonnet 5.5). Opus 5 is never used; Opus 5.5 always runs at medium effort. The main session edits directly only when a brief would cost more than the edit: roughly 20 lines across at most 2 files already in context.
 - `frugal:runner` (Haiku) runs tests and routine maintenance. `frugal:scout` (Haiku) does read-only lookups; prefer it over the built-in Explore agent, which inherits the main model.
 - Omit the `model` parameter when calling a plugin role; the role file owns routing.
 - Brief a subagent once and completely: goal, constraints, done criteria, relevant paths, and the facts you already established (file:line references, behaviour you confirmed) so it starts from them instead of re-exploring. Commit to the delegation; never redo or re-derive its work.

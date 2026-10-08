@@ -54,7 +54,7 @@ plugin/
 |---|---|---|---|---|
 | `scout` | Haiku | default | read-only lookups with `file:line` answers | write, run, delegate |
 | `runner` | Haiku | default | runs tests, builds, formatters; reports pass/fail | edit source, diagnose, delegate |
-| `prototyper` | Sonnet 5 | medium | executes a clear spec fast: prototypes, scripts, pattern edits, convention-following tests | delegate |
+| `prototyper` | Sonnet 5.5 | medium | executes a clear spec fast: prototypes, scripts, pattern edits, convention-following tests | delegate |
 | `coder` | Opus 5.5 | medium | features, root-caused fixes, refactors with design decisions | delegate |
 | `plan-reviewer` | Opus 5.5 | medium | adversarial read-only plan review, returns READY or REVISE | write, run, delegate |
 | `verifier` | Opus 5.5 | medium | fresh-context verification of an exact claim: CONFIRMED, REFUTED, INCONCLUSIVE | edit, delegate |
@@ -92,12 +92,12 @@ The plugin does not ask you to choose unless an Opus trigger applies.
 
 | Your preference | Verdict | Notes |
 |---|---|---|
-| Fable 5.1 for large features, complex refactors, performance work | Kept, as the orchestrator only | Fable plans, reviews, and coordinates those; the code is written by Opus 5.5 or Sonnet 5. Anything triaged as Direct runs on the session model as-is. |
+| Fable 5.1 for large features, complex refactors, performance work | Kept, as the orchestrator only | Fable plans, reviews, and coordinates those; the code is written by Opus 5.5 or Sonnet 5.5. Anything triaged as Direct runs on the session model as-is. |
 | Opus 5 is never used; Opus 5.5 at medium effort is the alternative frontier | Kept | Every role and rule that named Opus 5 now names Opus 5.5 at medium effort. |
 | Opus 5.5 for high-accuracy coding | Kept, pinned | Pinned to `claude-opus-5-5` so the floating `opus` alias can never resolve to Opus 5, which is never used. Same tokenizer as Fable. |
-| Sonnet 5 for fast iteration and clear plans | Kept | Matches the plan-big, execute-small executor role. |
+| Sonnet 5.5 for fast iteration and clear plans | Kept | Matches the plan-big, execute-small executor role. |
 | Haiku for tests and routine maintenance | Kept | Also used for read-only recon, as pilotfish does. |
-| Fable never writes code unless the change is tiny | Kept, with a ceiling | Main session edits directly at roughly 20 lines across 2 files already in context. One data point to revisit: on SWE-bench Pro, Fable 5.1 at low effort cost $0.54 per solved task against Sonnet 5's $0.84, because it solves more first try. Measure on your own work before changing the rule. |
+| Fable never writes code unless the change is tiny | Kept, with a ceiling | Main session edits directly at roughly 20 lines across 2 files already in context. One data point to revisit: on SWE-bench Pro, Fable 5.1 at low effort cost $0.54 per solved task against Sonnet 5's $0.84 (measured before Sonnet 5.5), because it solves more first try. Measure on your own work before changing the rule. |
 
 ## Changing a role's model
 
