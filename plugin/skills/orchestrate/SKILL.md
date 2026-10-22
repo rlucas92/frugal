@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-description: Full procedure for a multi-agent run once triage has chosen the multi-agent bucket. Chooses orchestrator vs advisor shape, confirms the frontier model, then runs research, plan, adversarial plan review, implementation, and verification through frugal role agents with the right model on each. Invoke with /frugal:orchestrate, or load it whenever the session-start policy routes a task to multi-agent.
+description: Full procedure for a multi-agent run once triage has chosen the multi-agent bucket. Chooses orchestrator vs advisor shape, confirms the frontier model, then runs research, design, plan, adversarial plan review, implementation, and verification through frugal role agents with the right model on each. Invoke with /frugal:orchestrate, or load it whenever the session-start policy routes a task to multi-agent.
 user-invocable: true
 ---
 
@@ -42,7 +42,9 @@ Run these in order, dropping any that do not apply. State which phases you are r
 
 **Research.** Read directly first. You already hold the request and the plan; a scout that reads the same files you would read and summarizes them back is a handoff with no gain, and its findings get read a third time by the coder. Delegate to `frugal:scout` only for a surface large enough that reading it yourself would crowd out later work, or for several independent surfaces you can sweep in parallel. Never run a scout as the step before a single coder. When you do delegate, launch scouts together in the background with disjoint scopes, do not read an active scout's scope yourself, and collect all results before comparing across surfaces. A scouted fact is input, not verified truth; re-check any fact a decision rests on.
 
-**Plan.** You write it. Goal, affected files, approach, ordered steps, risks, verification. Write it to a plan file if the project keeps plans in a directory; otherwise present it inline. For large work, split into independently approvable slices, each with scope, non-goals, owner, prerequisites, acceptance, and rollback.
+**Design.** For a new feature, a schema or data change, or a cross-cutting refactor, load `/frugal:design` and follow it before writing the plan. It decides whether the design space is open; when it is, the user chooses an option for each design decision before any implementation detail is written, and that choice is its own approval point. When it is closed, it says so in one line and you go straight to Plan. Skip this phase when the user already ran it or the work is executing an existing plan.
+
+**Plan.** You write it. When a design phase ran, the plan is the repo file `<feature>-plan.md` next to the design doc. It opens with a `## Design` section that links the design doc and lists the chosen options, then adds the implementation details. Goal, affected files, approach, ordered steps, risks, verification. Write it to a plan file if the project keeps plans in a directory; otherwise present it inline. For large work, split into independently approvable slices, each with scope, non-goals, owner, prerequisites, acceptance, and rollback.
 
 **Adversarial plan review.** One `frugal:plan-reviewer` with the plan and the paths. Use two or three in parallel only when a risk trigger applies (see Verify) or the plan has several slices; each extra reviewer re-reads the plan and the code, so it must earn its cost. Revise against blockers that survive your own check of their evidence. Two REVISE rounds on the same plan means simplify, narrow, or split it; do not resubmit an unchanged plan. Skip this phase when there is no real plan to review (one mechanical task with one obvious approach).
 
@@ -82,6 +84,6 @@ This skill is standing authorization to call the Workflow tool without a separat
 | prototyper | medium | judgment lives in the spec |
 | verifier | medium | balance point for read-and-run work |
 | coder | medium | Opus 5.5 default; raise where it misses |
-| plan-reviewer | medium | Opus 5.5 default; raise where it misses |
+| plan-reviewer, designer | medium | Opus 5.5 default; raise where it misses |
 | advisor | high | correctness over cost, short output |
 | orchestrator (you) | session setting | medium is usually enough on Fable; raise where it misses |

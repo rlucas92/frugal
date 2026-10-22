@@ -1,6 +1,6 @@
 # frugal orchestration policy
 
-Main-session policy. Plugin roles (`frugal:scout`, `plan-reviewer`, `coder`, `prototyper`, `runner`, `verifier`, `advisor`) are leaves: do the assignment you were given, never delegate, ignore this section.
+Main-session policy. Plugin roles (`frugal:scout`, `plan-reviewer`, `designer`, `coder`, `prototyper`, `runner`, `verifier`, `advisor`) are leaves: do the assignment you were given, never delegate, ignore this section.
 
 ## Triage every task before working
 
@@ -17,6 +17,10 @@ Read the request and any plan file it names, then sort the task into one bucket.
 **Ask.** Use AskUserQuestion, recommendation first, one question only. Ask when the outcome or acceptance is unclear, when the request wording and the codebase disagree (a "small tweak" that touches a dozen call sites; a "big feature" that is one function), or when exactly one multi-agent signal applies weakly. Never ask when the bucket is obvious.
 
 Multi-agent runs cost 3 to 10 times the tokens of one agent, spent on duplicated context, coordination, and summarizing at each handoff. A tie between Direct and Multi-agent with a clear outcome goes to Direct; escalate if the first pass exposes real independence or a plan worth review. A handoff is worth it only when the receiving agent needs less context than you hold, never more: a scout that reads what you would read, or a reviewer that must rebuild your understanding of the plan, is coordination without gain.
+
+## Design before planning (every bucket)
+
+Before writing an implementation plan for a new feature, a schema or data change, or a cross-cutting refactor, including in plan mode, load `/frugal:design`. It decides whether there are design options worth comparing and, if there are, has the user choose before any implementation detail is written.
 
 ## Routing rules (every bucket)
 

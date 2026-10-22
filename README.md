@@ -46,6 +46,7 @@ plugin/
 ├── policy/session-start.md     the triage rules, ~40 lines, loaded every session
 ├── skills/
 │   ├── orchestrate/SKILL.md    /frugal:orchestrate — the full multi-agent procedure
+│   ├── design/SKILL.md         /frugal:design — overall design options before the implementation plan
 │   └── code-comments/SKILL.md  /frugal:code-comments — comment rules, preloaded into coders
 └── agents/                     one role per file, referenced as frugal:<name>
 ```
@@ -57,6 +58,7 @@ plugin/
 | `prototyper` | Sonnet 5.5 | medium | executes a clear spec fast: prototypes, scripts, pattern edits, convention-following tests | delegate |
 | `coder` | Opus 5.5 | medium | features, root-caused fixes, refactors with design decisions | delegate |
 | `plan-reviewer` | Opus 5.5 | medium | adversarial read-only plan review, returns READY or REVISE | write, run, delegate |
+| `designer` | Opus 5.5 | medium | independent design options from the requirements alone, without the proposed design | write, run, delegate |
 | `verifier` | Opus 5.5 | medium | fresh-context verification of an exact claim: CONFIRMED, REFUTED, INCONCLUSIVE | edit, delegate |
 | `advisor` | Fable 5.1 | high | plan or course correction for a session running on a cheaper model | write, run |
 
@@ -70,9 +72,22 @@ The orchestrator is the main session, so the frontier model is whatever `/model`
    - *Ask*: outcome unclear, request wording disagrees with the codebase, or exactly one weak multi-agent signal. One AskUserQuestion with a recommendation. Ties with a clear outcome go to Direct.
 2. **Shape** (`orchestrate` §1). Independent pieces get the orchestrator shape. A serial chain that is hard in spots gets the advisor shape, which by default runs inside the orchestrator: one coder owns the chain and escalates "blocked because X" to the main session, which answers and re-tasks it. The literal advisor pattern (cheap main session plus `advisor`) needs a `/model` switch, so it is recommended, not automatic.
 3. **Frontier model** (`orchestrate` §2). See the rule of thumb below.
-4. **Phases**: research (orchestrator reads directly; scouts only for large or several independent surfaces) → plan (main session) → adversarial review (one plan-reviewer; more only on risk triggers or multi-slice plans) → approval → implement (coder or prototyper per piece, briefed with the facts already established; worktrees for parallel writers) → verify (coder runs its piece's tests, runner runs the full suite once, verifier only on risk triggers) → report.
+4. **Phases**: research (orchestrator reads directly; scouts only for large or several independent surfaces) → design (see below) → plan (main session) → adversarial review (one plan-reviewer; more only on risk triggers or multi-slice plans) → approval → implement (coder or prototyper per piece, briefed with the facts already established; worktrees for parallel writers) → verify (coder runs its piece's tests, runner runs the full suite once, verifier only on risk triggers) → report.
 
 Every handoff duplicates context and summarizes on the way back, which is where the 3 to 10x multi-agent token cost comes from. The rule throughout: a handoff is worth it only when the receiving agent needs less context than the sender holds. A typical mid-size feature runs 4 to 6 agents, not 8 or 9.
+
+## Design before the implementation plan
+
+Planning a new feature, a schema or data change, or a cross-cutting refactor runs in two steps: overall design, then implementation details. The session policy loads `/frugal:design` before any such plan, in plan mode too, and you can invoke it directly.
+
+1. You give the feature summary, requirements, tickets, acceptance criteria, and any proposed design (yours or a teammate's).
+2. It investigates and decides whether the design space is open. A bug fix or a column added to an existing table gets one line naming the pattern it follows, then goes straight to the plan.
+3. If the space is open, it names the design decisions as questions ("How are Ops uploads told apart from Insights+ uploads?"). For each one it lists options with trade-offs and a recommendation. One option always reuses the mechanism the codebase already uses for that kind of question. A `designer` agent drafts options without seeing the proposed design, so the proposal is weighed instead of assumed.
+4. The result is a short design doc, saved in the repo as `<docs dir>/<feature>-design.md`, that you can share with the team as is. It names mechanisms and tables, not files or line numbers; evidence sits in a separate section at the end.
+5. You ask questions and iterate, then choose an option for each decision. Rejected options stay in the doc with one line on why they lost.
+6. The implementation plan (files, line numbers, steps, PR slices) is saved next to it as `<feature>-plan.md`, opening with a link to the design doc and the chosen options, and goes through the usual review and approval. In plan mode both are drafted in the plan file and written to the repo right after approval. It can be executed in a later session.
+
+Defaults when recommending: smaller and fewer PRs first, then reuse of existing abstractions, patterns, and tables, then performance where it does not cost much simplicity.
 
 ## Opus 5.5 vs Fable 5.1: rule of thumb
 
