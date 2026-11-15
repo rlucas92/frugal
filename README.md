@@ -47,6 +47,8 @@ plugin/
 ├── skills/
 │   ├── orchestrate/SKILL.md    /frugal:orchestrate — the full multi-agent procedure
 │   ├── design/SKILL.md         /frugal:design — overall design options before the implementation plan
+│   ├── review-plan/SKILL.md    /frugal:review-plan — adversarial plan review on Fable 5.2
+│   ├── run-tests/SKILL.md      /frugal:run-tests — test runs on a cheaper model, triaged before review
 │   └── code-comments/SKILL.md  /frugal:code-comments — comment rules, preloaded into coders
 └── agents/                     one role per file, referenced as frugal:<name>
 ```
@@ -55,12 +57,13 @@ plugin/
 |---|---|---|---|---|
 | `scout` | Haiku | default | read-only lookups with `file:line` answers | write, run, delegate |
 | `runner` | Haiku | default | runs tests, builds, formatters; reports pass/fail | edit source, diagnose, delegate |
+| `test-runner` | Sonnet 5.5 | medium | runs requested tests, triages failures with git/GitHub history, proposes obvious fixes | edit, delegate |
 | `prototyper` | Sonnet 5.5 | medium | executes a clear spec fast: prototypes, scripts, pattern edits, convention-following tests | delegate |
 | `coder` | Opus 5.5 | medium | features, root-caused fixes, refactors with design decisions | delegate |
-| `plan-reviewer` | Opus 5.5 | medium | adversarial read-only plan review, returns READY or REVISE | write, run, delegate |
+| `plan-reviewer` | Fable 5.2 | high | adversarial read-only plan review, returns READY or REVISE | write, run, delegate |
 | `designer` | Opus 5.5 | medium | independent design options from the requirements alone, without the proposed design | write, run, delegate |
 | `verifier` | Opus 5.5 | medium | fresh-context verification of an exact claim: CONFIRMED, REFUTED, INCONCLUSIVE | edit, delegate |
-| `advisor` | Fable 5.1 | high | plan or course correction for a session running on a cheaper model | write, run |
+| `advisor` | Fable 5.2 | high | plan or course correction for a session running on a cheaper model | write, run |
 
 The orchestrator is the main session, so the frontier model is whatever `/model` is set to.
 
@@ -72,7 +75,7 @@ The orchestrator is the main session, so the frontier model is whatever `/model`
    - *Ask*: outcome unclear, request wording disagrees with the codebase, or exactly one weak multi-agent signal. One AskUserQuestion with a recommendation. Ties with a clear outcome go to Direct.
 2. **Shape** (`orchestrate` §1). Independent pieces get the orchestrator shape. A serial chain that is hard in spots gets the advisor shape, which by default runs inside the orchestrator: one coder owns the chain and escalates "blocked because X" to the main session, which answers and re-tasks it. The literal advisor pattern (cheap main session plus `advisor`) needs a `/model` switch, so it is recommended, not automatic.
 3. **Frontier model** (`orchestrate` §2). See the rule of thumb below.
-4. **Phases**: research (orchestrator reads directly; scouts only for large or several independent surfaces) → design (see below) → plan (main session) → adversarial review (one plan-reviewer; more only on risk triggers or multi-slice plans) → approval → implement (coder or prototyper per piece, briefed with the facts already established; worktrees for parallel writers) → verify (coder runs its piece's tests, runner runs the full suite once, verifier only on risk triggers) → report.
+4. **Phases**: research (orchestrator reads directly; scouts only for large or several independent surfaces) → design (see below) → plan (main session) → adversarial review (one plan-reviewer when a review trigger applies; one per slice on multi-slice plans) → approval → implement (coder or prototyper per piece, briefed with the facts already established; worktrees for parallel writers) → verify (coder runs its piece's tests, runner runs the full suite once, verifier only on risk triggers) → report.
 
 Every handoff duplicates context and summarizes on the way back, which is where the 3 to 10x multi-agent token cost comes from. The rule throughout: a handoff is worth it only when the receiving agent needs less context than the sender holds. A typical mid-size feature runs 4 to 6 agents, not 8 or 9.
 
@@ -89,15 +92,33 @@ Planning a new feature, a schema or data change, or a cross-cutting refactor run
 
 Defaults when recommending: smaller and fewer PRs first, then reuse of existing abstractions, patterns, and tables, then performance where it does not cost much simplicity.
 
-## Opus 5.5 vs Fable 5.1: rule of thumb
+## Plan review
 
-Direct tasks run on the session model, whichever it is. Choose Fable 5.1 as the session model for complex, long-horizon planning; Opus 5.5 at medium effort is the everyday default. Within multi-agent runs, default to **Fable 5.1 at medium effort** for orchestration and advising. Switch to **Opus 5.5 at medium effort** when Fable has refused a benign request, or for long research loops over external sources. Opus 5.5 runs cyber and bio safety classifiers similar to Fable's, so it is a retry path for a false positive, not a way around the classifiers. Opus 5 is never used anywhere in the plugin; Opus 5.5 at medium effort replaces it.
+A plan is reviewed by `plan-reviewer`, an agent that did not write it, always on Fable 5.2 at high effort whatever the session model is. It checks the plan's claims against the code and returns READY or REVISE with blockers, each with evidence and the smallest revision that removes it.
+
+- **Automatic.** In any bucket, plan mode included, the session policy loads `/frugal:review-plan` after the plan is written and before it is presented for approval, when a trigger applies: a schema, data, or migration change; a security boundary or an irreversible path; a changed contract between components, several modules, or more than one pull request; a design step that had open decisions; or a step that rests on code behaviour the session inferred and did not read. The verdict is shown with the plan. When no trigger applies, the plan carries one line saying the review was skipped and why.
+- **Manual.** `/frugal:review-plan [plan file]` reviews any plan, before or after you accept it. If a blocker changes a plan you already accepted, the revised plan comes back for approval before any code is written.
+
+## Running tests
+
+Asking for tests in any session ("run the unit tests", "run the datashare spec") loads `/frugal:run-tests` instead of running them on the session model.
+
+1. The main session briefs one `test-runner` (Sonnet 5.5) with the repo, the exact scope, and what it already knows.
+2. The agent runs the narrowest command that covers the request, then triages each failure: reads the assertion and the code under test, compares the last commits to the test against the last commits to the code (and merged PRs via `gh`), and classifies it as stale test, regression, environment, flaky, or unclear. It proposes a fix only when it is obvious and never edits.
+3. The main session checks the classifications against their evidence, re-tasks the agent with SendMessage if something needs one more look, and proposes next steps. Nothing is applied until you choose.
+
+For `platform-api-test` the agent follows that repo's CLAUDE.md rules: one spec file at a time, never the whole suite or `teardown` against a local API, `scripts/api.sh status` before running, `../platform-api-under-test` as the source of truth, never bending an assertion to match current behaviour, the first failing phase of a serial data share suite as the one to triage, and datastore 500s as environment.
+
+## Opus 5.5 vs Fable 5.2: rule of thumb
+
+Direct tasks run on the session model, whichever it is. Choose Fable 5.2 as the session model for complex, long-horizon planning; Opus 5.5 at medium effort is the everyday default. Within multi-agent runs, default to **Fable 5.2 at medium effort** for orchestration and advising; plan review always runs on Fable 5.2. Switch to **Opus 5.5 at medium effort** when Fable has refused a benign request, or for long research loops over external sources. Opus 5.5 runs cyber and bio safety classifiers similar to Fable's, so it is a retry path for a false positive, not a way around the classifiers. Opus 5 is never used anywhere in the plugin; Opus 5.5 at medium effort replaces it.
 
 Why:
 
 | Finding | Source |
 |---|---|
-| Fable 5.1 cached input is $0.25/M vs $0.20/M for Opus 5.5, and cached input is the largest term in an agent loop; the two are close, so the choice is about behaviour, not cost | pricing page |
+| Fable 5.2 cache reads are $0.20/M, the same as Opus 5.5, and cached input is the largest term in an agent loop. Uncached input and output cost twice as much ($8/$40 per M against $4/$20), so Fable stays on short-output judgment roles: orchestration, advising, plan review | pricing page |
+| Fable 5.2 is up to 30% faster than Fable 5.1, uses fewer tokens at medium effort, and has about 55% fewer classifier blocks; Anthropic recommends Opus 5.5 as the daily driver and Fable as advisor or orchestrator | [Fable 5.2 launch notes](https://www.anthropic.com/claude-fable-and-mythos-5-2) |
 | Frontier safety classifiers can refuse defensive security work mid-task; pilotfish routes security to Opus for this reason. Since Opus 5.5 ships the same classifier families (cyber, bio), the Opus switch is a retry after a false positive, not a guaranteed pass | pilotfish design notes; Opus 5.5 launch notes |
 | Opus 5.5 defaults to medium effort, and at medium it beat Opus 5 at high on agentic coding with about half the tokens; cache reads are $0.20/M against Opus 5's $0.50/M | Opus 5.5 launch notes |
 
@@ -107,16 +128,16 @@ The plugin does not ask you to choose unless an Opus trigger applies.
 
 | Your preference | Verdict | Notes |
 |---|---|---|
-| Fable 5.1 for large features, complex refactors, performance work | Kept, as the orchestrator only | Fable plans, reviews, and coordinates those; the code is written by Opus 5.5 or Sonnet 5.5. Anything triaged as Direct runs on the session model as-is. |
+| Fable 5.2 for large features, complex refactors, performance work | Kept, as the orchestrator only | Fable plans, reviews, and coordinates those; the code is written by Opus 5.5 or Sonnet 5.5. Anything triaged as Direct runs on the session model as-is. |
 | Opus 5 is never used; Opus 5.5 at medium effort is the alternative frontier | Kept | Every role and rule that named Opus 5 now names Opus 5.5 at medium effort. |
 | Opus 5.5 for high-accuracy coding | Kept, pinned | Pinned to `claude-opus-5-5` so the floating `opus` alias can never resolve to Opus 5, which is never used. Same tokenizer as Fable. |
 | Sonnet 5.5 for fast iteration and clear plans | Kept | Matches the plan-big, execute-small executor role. |
-| Haiku for tests and routine maintenance | Kept | Also used for read-only recon, as pilotfish does. |
+| Haiku for tests and routine maintenance | Kept, except triage | Haiku runs builds, formatters, and the orchestrate full-suite pass, and does read-only recon as pilotfish does. Test runs you ask for go to Sonnet 5.5 because the same agent triages the failures. |
 | Fable never writes code unless the change is tiny | Kept, with a ceiling | Main session edits directly at roughly 20 lines across 2 files already in context. One data point to revisit: on SWE-bench Pro, Fable 5.1 at low effort cost $0.54 per solved task against Sonnet 5's $0.84 (measured before Sonnet 5.5), because it solves more first try. Measure on your own work before changing the rule. |
 
 ## Changing a role's model
 
-Edit the `model:` line in `plugin/agents/<role>.md`. Aliases (`haiku`, `sonnet`, `opus`, `fable`) float to the current release; full IDs (`claude-opus-5-5`) pin. The coding roles are pinned on purpose.
+Edit the `model:` line in `plugin/agents/<role>.md`. Aliases (`haiku`, `sonnet`, `opus`, `fable`) float to the current release; full IDs (`claude-opus-5-5`, `claude-fable-5-2`) pin. The coding roles and `plan-reviewer` are pinned on purpose; `advisor` floats on the `fable` alias, so it follows the current Fable release.
 
 ## Comment rules
 

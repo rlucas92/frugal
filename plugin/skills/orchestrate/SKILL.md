@@ -30,7 +30,7 @@ The orchestrator and the advisor are the frontier model. The orchestrator is the
 
 Rule of thumb, from Anthropic's published cost and intelligence measurements:
 
-- **Fable 5.1 at medium effort** is the orchestrator only for complex, long-horizon planning; that is what the multi-agent bucket is, so it is the default here and nowhere else. It delegates and coordinates subagents more reliably, and is cheap on cached input (which dominates an agent loop). Raise effort only where it misses.
+- **Fable 5.2 at medium effort** is the orchestrator only for complex, long-horizon planning; that is what the multi-agent bucket is, so it is the default here and nowhere else. It delegates and coordinates subagents more reliably, and is cheap on cached input (which dominates an agent loop). Raise effort only where it misses.
 - **Switch to Opus 5.5 at medium effort when** Fable has refused a benign request (Opus 5.5 runs similar cyber and bio classifiers, so this is a retry, not a bypass), or when the run is a long research loop over external sources. Cap its spawn count and ask for terse reports.
 - If none of the Opus triggers apply, do not ask; use the session model.
 
@@ -46,7 +46,7 @@ Run these in order, dropping any that do not apply. State which phases you are r
 
 **Plan.** You write it. When a design phase ran, the plan is the repo file `<feature>-plan.md` next to the design doc. It opens with a `## Design` section that links the design doc and lists the chosen options, then adds the implementation details. Goal, affected files, approach, ordered steps, risks, verification. Write it to a plan file if the project keeps plans in a directory; otherwise present it inline. For large work, split into independently approvable slices, each with scope, non-goals, owner, prerequisites, acceptance, and rollback.
 
-**Adversarial plan review.** One `frugal:plan-reviewer` with the plan and the paths. Use two or three in parallel only when a risk trigger applies (see Verify) or the plan has several slices; each extra reviewer re-reads the plan and the code, so it must earn its cost. Revise against blockers that survive your own check of their evidence. Two REVISE rounds on the same plan means simplify, narrow, or split it; do not resubmit an unchanged plan. Skip this phase when there is no real plan to review (one mechanical task with one obvious approach).
+**Adversarial plan review.** When a plan review trigger from the session-start policy applies, load `/frugal:review-plan` and follow it: one `frugal:plan-reviewer` (Fable 5.2), or one per slice when the plan has several independent slices. When no trigger applies, skip the phase and say so in one line with the plan.
 
 **Approval.** Large, architectural, or risky work waits for explicit user approval of the plan before any source edit. A broad initial request is not approval of an unseen plan. Present the plan, end the turn.
 
@@ -72,7 +72,7 @@ This skill is standing authorization to call the Workflow tool without a separat
 
 ## 5. Model-specific orchestrator behaviour
 
-- **On Fable 5.1:** delegate asynchronously. Launch subagents with `run_in_background` and keep working; intervene if one goes off track or lacks context. State goals and constraints in briefs rather than step lists; prescriptive checklists reduce output quality on this generation. For long builds, establish a way of checking your own work and run it on a cadence; a fresh-context verifier outperforms self-critique.
+- **On Fable 5.2:** delegate asynchronously. Launch subagents with `run_in_background` and keep working; intervene if one goes off track or lacks context. State goals and constraints in briefs rather than step lists; prescriptive checklists reduce output quality on this generation. For long builds, establish a way of checking your own work and run it on a cadence; a fresh-context verifier outperforms self-critique.
 - **On Opus 5.5:** keep spawn counts low. Do not spawn a subagent for work you can finish in a handful of tool calls, and do not spawn subagents just to double-check yourself; verification belongs in your own loop except where the risk triggers above call for the verifier role. Brief once, commit to the delegation.
 - **Any model:** omit `model` on plugin-role calls. Never set `CLAUDE_CODE_SUBAGENT_MODEL`; it overrides every role's routing.
 
@@ -84,6 +84,6 @@ This skill is standing authorization to call the Workflow tool without a separat
 | prototyper | medium | judgment lives in the spec |
 | verifier | medium | balance point for read-and-run work |
 | coder | medium | Opus 5.5 default; raise where it misses |
-| plan-reviewer, designer | medium | Opus 5.5 default; raise where it misses |
-| advisor | high | correctness over cost, short output |
+| designer | medium | Opus 5.5 default; raise where it misses |
+| plan-reviewer, advisor | high | Fable 5.2; correctness over cost, short output |
 | orchestrator (you) | session setting | medium is usually enough on Fable; raise where it misses |

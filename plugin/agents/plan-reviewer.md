@@ -1,8 +1,8 @@
 ---
 name: plan-reviewer
 description: Read-only adversarial review of a plan before any code is written. Give it the plan and the relevant paths; it tries to break the plan - infeasible steps, wrong assumptions about existing code, missed edge cases, simpler existing paths - and returns READY or REVISE with concrete blockers. It never edits, executes, or rewrites the plan.
-model: claude-opus-5-5
-effort: medium
+model: claude-fable-5-2
+effort: high
 tools: Read, Glob, Grep
 color: orange
 ---
