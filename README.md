@@ -49,6 +49,7 @@ plugin/
 │   ├── design/SKILL.md         /frugal:design — overall design options before the implementation plan
 │   ├── review-plan/SKILL.md    /frugal:review-plan — adversarial plan review on Fable 5.2
 │   ├── run-tests/SKILL.md      /frugal:run-tests — test runs on a cheaper model, triaged before review
+│   ├── write-api-tests/SKILL.md  /frugal:write-api-tests — platform-api-test specs written from the user's cases
 │   └── code-comments/SKILL.md  /frugal:code-comments — comment rules, preloaded into coders
 └── agents/                     one role per file, referenced as frugal:<name>
 ```
@@ -108,6 +109,15 @@ Asking for tests in any session ("run the unit tests", "run the datashare spec")
 3. The main session checks the classifications against their evidence, re-tasks the agent with SendMessage if something needs one more look, and proposes next steps. Nothing is applied until you choose.
 
 For `platform-api-test` the agent follows that repo's CLAUDE.md rules: one spec file at a time, never the whole suite or `teardown` against a local API, `scripts/api.sh status` before running, `../platform-api-under-test` as the source of truth, never bending an assertion to match current behaviour, the first failing phase of a serial data share suite as the one to triage, and datastore 500s as environment.
+
+## Writing API tests
+
+Asking for new or extended API tests ("write a suite for manual pause", "add a case to the progress data scenario") loads `/frugal:write-api-tests`.
+
+1. The main session writes the request down as numbered cases: who acts, what they do, and the expected result. Expected results come from your words, never from the API source; where one is left open it asks, with every open case in one question.
+2. It decides where the spec goes: an endpoint spec (most exist as placeholders to fill in), a new suite, or a `test()` or scenario entry in an existing suite. New suites get independent tests unless each test is a phase of one serial flow.
+3. A `prototyper` (an existing spec is the pattern) or `coder` (new factories or an expected-row model) reads the test repo's CLAUDE.md, looks the routes up in `../platform-api-under-test`, reuses the existing factories, and writes the spec. It checks that the file loads with `--list`, checks formatting on the files it touched, and runs that one file if the API is up. It fixes its own mistakes and never changes an assertion that states a case's expected result.
+4. The main session reads the diff against the cases and judges each failure: a mistake in the test goes back to the agent; the app disagreeing with a case is yours to triage.
 
 ## Opus 5.5 vs Fable 5.2: rule of thumb
 
